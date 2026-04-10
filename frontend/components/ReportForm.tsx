@@ -22,7 +22,11 @@ export default function ReportForm() {
       .catch(console.error);
   }, []);
 
-  const [reportData, setReportData] = useState<{ report: string; data: any[] } | null>(null);
+  const [targetGrowth, setTargetGrowth] = useState("10"); // new UI state
+  const [riskTolerance, setRiskTolerance] = useState("Moderate"); // new UI state
+  const [budget, setBudget] = useState("50000"); // new UI state
+
+  const [reportData, setReportData] = useState<{ report: string; data: any[]; ai_forecast_data?: any[] } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -37,6 +41,9 @@ export default function ReportForm() {
         company_name: companyName,
         start_date: startDate,
         end_date: endDate,
+        target_growth: targetGrowth,
+        risk_tolerance: riskTolerance,
+        budget: budget
       });
 
       setReportData(res);
@@ -95,13 +102,57 @@ export default function ReportForm() {
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full h-[50px] bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-medium rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-70 flex items-center justify-center gap-2"
-          >
-            {loading ? <Loader /> : <><Sparkles className="w-4 h-4"/> Generate</>}
-          </button>
+          {/* New Expanded Param Rows */}
+          <div className="space-y-2 col-span-1 md:col-span-1">
+            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+               Target Growth (%)
+            </label>
+            <input
+              type="number"
+              value={targetGrowth}
+              onChange={(e) => setTargetGrowth(e.target.value)}
+              className="w-full bg-slate-900/50 border border-slate-700 text-slate-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition-all p-3 rounded-xl outline-none"
+              required
+            />
+          </div>
+
+          <div className="space-y-2 col-span-1 md:col-span-1">
+            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+               Risk Tolerance
+            </label>
+            <select
+              value={riskTolerance}
+              onChange={(e) => setRiskTolerance(e.target.value)}
+              className="w-full bg-slate-900/50 border border-slate-700 text-slate-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition-all p-3 rounded-xl outline-none"
+            >
+                <option value="Low" className="bg-slate-800">Low</option>
+                <option value="Moderate" className="bg-slate-800">Moderate</option>
+                <option value="High" className="bg-slate-800">High</option>
+            </select>
+          </div>
+
+          <div className="space-y-2 col-span-1 md:col-span-1">
+            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+               Budget Alloc ($)
+            </label>
+            <input
+              type="number"
+              value={budget}
+              onChange={(e) => setBudget(e.target.value)}
+              className="w-full bg-slate-900/50 border border-slate-700 text-slate-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition-all p-3 rounded-xl outline-none"
+              required
+            />
+          </div>
+
+          <div className="md:col-span-4 mt-2">
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full h-[50px] bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-medium rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-70 flex items-center justify-center gap-2"
+              >
+                {loading ? <Loader /> : <><Sparkles className="w-4 h-4"/> Generate Advanced AI Report</>}
+              </button>
+          </div>
         </form>
 
         {error && (
@@ -156,6 +207,42 @@ export default function ReportForm() {
                         </ResponsiveContainer>
                     )}
                 </div>
+
+                {reportData.ai_forecast_data && reportData.ai_forecast_data.length > 0 && (
+                   <div className="mt-8 border-t border-slate-700/50 pt-8 flex-1 min-h-[300px]">
+                      <h3 className="text-lg font-bold text-pink-400 mb-6 flex items-center gap-2">
+                          <span className="bg-pink-500/20 p-1.5 rounded-lg"><Sparkles className="w-4 h-4 text-pink-400"/></span>
+                          AI Predictive Forecast
+                      </h3>
+                      <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={[...reportData.ai_forecast_data]}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" />
+                            <XAxis 
+                                dataKey="forecast_date" 
+                                tick={{fill: '#94A3B8', fontSize: 12}}
+                                tickLine={false}
+                                axisLine={false}
+                            />
+                            <YAxis 
+                                tick={{fill: '#94A3B8', fontSize: 12}}
+                                tickLine={false}
+                                axisLine={false}
+                            />
+                            <Tooltip 
+                                contentStyle={{borderRadius: '12px', border: '1px solid #475569', backgroundColor: '#1E293B', color: '#F8FAFC', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}}
+                            />
+                            <Line 
+                                type="monotone" 
+                                dataKey="predicted_value" 
+                                stroke="#EC4899" 
+                                strokeWidth={3}
+                                dot={{ fill: '#EC4899', strokeWidth: 2, r: 4 }}
+                                activeDot={{ r: 6 }}
+                            />
+                            </LineChart>
+                      </ResponsiveContainer>
+                   </div>
+                )}
             </div>
 
             {/* Right Report Panel */}

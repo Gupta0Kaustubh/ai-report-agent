@@ -33,11 +33,12 @@ export default function HistoryTab() {
 
   if (selectedReport) {
      let chartData = [];
+     let parsedParams: any = {};
      try {
-       const parsedParams = typeof selectedReport.parameters === 'string' 
+       parsedParams = typeof selectedReport.parameters === 'string' 
             ? JSON.parse(selectedReport.parameters) 
             : selectedReport.parameters;
-       chartData = parsedParams.data || [];
+       chartData = parsedParams?.data || [];
      } catch (e) {
        console.error("Failed parsing chart payload", e);
      }
@@ -95,6 +96,42 @@ export default function HistoryTab() {
                             </ResponsiveContainer>
                         )}
                     </div>
+
+                    {parsedParams.ai_forecast_data && parsedParams.ai_forecast_data.length > 0 && (
+                       <div className="mt-8 border-t border-slate-700/50 pt-8 flex-1 min-h-[300px]">
+                          <h3 className="text-lg font-bold text-pink-400 mb-6 flex items-center gap-2">
+                              <span className="bg-pink-500/20 p-1.5 rounded-lg"><svg className="w-4 h-4 text-pink-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v18"/><path d="m3 12 18-18"/><path d="m21 12-18 18"/></svg></span>
+                              AI Predictive Forecast
+                          </h3>
+                          <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={[...parsedParams.ai_forecast_data]}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" />
+                                <XAxis 
+                                    dataKey="forecast_date" 
+                                    tick={{fill: '#94A3B8', fontSize: 12}}
+                                    tickLine={false}
+                                    axisLine={false}
+                                />
+                                <YAxis 
+                                    tick={{fill: '#94A3B8', fontSize: 12}}
+                                    tickLine={false}
+                                    axisLine={false}
+                                />
+                                <Tooltip 
+                                    contentStyle={{borderRadius: '12px', border: '1px solid #475569', backgroundColor: '#1E293B', color: '#F8FAFC', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}}
+                                />
+                                <Line 
+                                    type="monotone" 
+                                    dataKey="predicted_value" 
+                                    stroke="#EC4899" 
+                                    strokeWidth={3}
+                                    dot={{ fill: '#EC4899', strokeWidth: 2, r: 4 }}
+                                    activeDot={{ r: 6 }}
+                                />
+                                </LineChart>
+                          </ResponsiveContainer>
+                       </div>
+                    )}
                 </div>
 
                 {/* Right Report Panel */}

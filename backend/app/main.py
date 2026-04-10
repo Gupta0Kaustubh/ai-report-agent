@@ -62,21 +62,30 @@ def generate_report(req: ReportRequest):
     resolved_company_id = data[0].get("company_id")
 
     # Step 2: Generate report via CrewAI
-    report = generate_report_with_crew(data, req.company_name)
+    ai_payload = generate_report_with_crew(
+        data, 
+        req.company_name, 
+        req.target_growth, 
+        req.risk_tolerance, 
+        req.budget
+    )
+    report_md = ai_payload["report"]
+    ai_forecast_data = ai_payload["ai_forecast_data"]
 
     # Step 3: Save report
     if resolved_company_id:
         param_payload = {
             "req": req.model_dump() if hasattr(req, "model_dump") else req.dict(),
-            "data": data
+            "data": data,
+            "ai_forecast_data": ai_forecast_data
         }
         save_report(
             resolved_company_id,
             json.dumps(param_payload),
-            str(report)
+            str(report_md)
         )
 
-    return {"report": str(report), "data": data}
+    return {"report": str(report_md), "data": data, "ai_forecast_data": ai_forecast_data}
 
 @app.get("/reports")
 def list_reports():
