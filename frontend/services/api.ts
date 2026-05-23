@@ -1,7 +1,14 @@
 import axios from "axios";
 
+let rawURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+if (rawURL.endsWith("/")) {
+  rawURL = rawURL.slice(0, -1);
+}
+// Strip /api from baseURL if present because root endpoints (/companies, /reports, /generate-report) are not prefixed with /api
+const baseAPIURL = rawURL.endsWith("/api") ? rawURL.slice(0, -4) : rawURL;
+
 const API = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000",
+  baseURL: baseAPIURL,
 });
 
 export const generateReport = async (payload: any) => {

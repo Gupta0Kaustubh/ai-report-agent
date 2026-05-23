@@ -5,8 +5,10 @@ from app.schemas.report_schema import ReportRequest
 from app.services.data_service import fetch_metrics, get_all_companies
 from app.services.crew_service import generate_report_with_crew
 from app.services.report_service import save_report, get_all_reports
+from app.routers.chat import router as chat_router
 
 app = FastAPI()
+app.include_router(chat_router)
 
 import os
 from sqlalchemy import text
